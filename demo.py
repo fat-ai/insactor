@@ -92,9 +92,9 @@ def generative_controller(planned_motion, perturb, motion_length):
         rollout_traj = rollout_traj[:, :planned_motion.shape[1]]
         return np.array(rollout_traj)
 
-def run(text):
+def run(text,length):
        
-        motion_length = 100
+        motion_length = length
         autoregressive = False
         show_plan = True
         show_sim = True
