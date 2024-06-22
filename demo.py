@@ -92,35 +92,23 @@ def generative_controller(planned_motion, perturb, motion_length):
         rollout_traj = rollout_traj[:, :planned_motion.shape[1]]
         return np.array(rollout_traj)
 
-if __name__ == '__main__':
-    with st.form(key='text_input'):
-        text = st.text_input(label='Motion description', value="A person is walking like a zombie.")
-        ready_to_generate = st.form_submit_button(label='Generate')
-        with st.expander('More Control'):
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                motion_length = st.number_input('Motion Length (s)', value=6, min_value=1, max_value=10000)
-                autoregressive = st.checkbox(label="Keep History", value=False)
-                show_plan = st.checkbox(label="Show Plan", value=True)
-                show_sim = st.checkbox(label="Show Simulated", value=True)
-            with col2:
-                perturb = st.checkbox(label="Perturb", value=False)
-            with col3:
-                apply_target = st.checkbox(label="Set Target", value=False)
-                f_ed = st.number_input('Forward Dir ', value=3., min_value=-5., max_value=5., step=0.5)
-                r_ed = st.number_input('Right Dir.', value=0., min_value=-5., max_value=5., step=0.5)
-                y_ed = f_ed * -1
-                x_ed = r_ed * -1
+def run(text):
+       
+        motion_length = 100
+        autoregressive = False
+        show_plan = True
+        show_sim = True
 
-    
-    if ready_to_generate:
-        if 'history' in st.session_state and autoregressive:
-            pre_seq = remove_scene_from_traj(st.session_state.history)[0][:, -60:]
-            pre_seq = np.array(pre_seq)
-            history = st.session_state.history
-        else:
-            pre_seq = None
-            history = None
+        perturb = False
+      
+        apply_target = True
+        f_ed = 3.
+        r_ed = 0.
+        y_ed = f_ed * -1
+        x_ed = r_ed * -1
+                
+        pre_seq = None
+        history = None
         x_ed = x_ed if apply_target else None
         y_ed = y_ed if apply_target else None
         waypoint = (x_ed, y_ed) if apply_target else None
@@ -141,12 +129,3 @@ if __name__ == '__main__':
                 rollout_traj = generative_controller(planned_motion, perturb=perturb, motion_length=motion_length * 30)
             # st.write('Simulated Animation:')
             display(rollout_traj, history)
-            if autoregressive:
-                if 'history' in st.session_state:
-                    rollout_traj = np.concatenate([st.session_state.history[:, :-1], rollout_traj], axis=1)
-                    del st.session_state['history']
-                rollout_traj = np.array(rollout_traj)
-                st.session_state.history = set_endpoint_to_zero(rollout_traj)
-            else:
-                if 'history' in st.session_state:
-                    del st.session_state['history']
